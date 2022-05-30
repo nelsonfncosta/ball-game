@@ -14,7 +14,7 @@ const BALL_RADIUS = 10;
 let ballPosX = WIDTH / 2;
 let ballPosY = HEIGHT - 30;
 
-const BALL_SPEED = 4;
+const BALL_SPEED = 8;
 let dx = BALL_SPEED;
 let dy = -BALL_SPEED;
 
@@ -39,7 +39,7 @@ const BRICK_SETTINGS = {
   brickWidth: BRICK_WIDTH,
   brickPadding: BRICK_PADDING,
   brickHeight: 20,
-  brickOffsetTop: 30,
+  brickOffsetTop: 60,
   brickOffsetLeft: (WIDTH - (BRICK_WIDTH + BRICK_PADDING) * BRICK_COLUMNS) / 2,
   color: '#0095DD',
 };
@@ -62,7 +62,7 @@ for (let c = 0; c < BRICK_SETTINGS.brickColumnCount; c += 1) {
   }
 }
 
-function moveBall(interval) {
+function moveBall() {
   if (ballPosY + dy < BALL_RADIUS) {
     dy = -dy;
   } else if (ballPosY + dy > HEIGHT - BALL_RADIUS) {
@@ -70,7 +70,6 @@ function moveBall(interval) {
       dy = -dy;
     } else {
       document.location.reload();
-      clearInterval(interval);
     }
   }
 
@@ -120,22 +119,33 @@ function collision() {
   });
 }
 
-function draw(ctx, { interval }) {
+function draw(ctx, update) {
   clear(ctx, WIDTH, HEIGHT);
 
   drawPaddle(ctx, paddle);
   drawBall(ctx, ballPosX, ballPosY, BALL_RADIUS);
   drawBricks(ctx, BRICK_SETTINGS, bricks);
 
-  moveBall(interval);
+  moveBall();
 
   movePaddle();
 
   collision();
+
+  const ref = requestAnimationFrame(() => draw(ctx, update));
+  update(ref);
 }
 
 export default function App() {
   const ref = useRef();
+  const drawRef = useRef();
+
+  const updateDrawRef = useCallback(
+    request => {
+      drawRef.current = request;
+    },
+    [drawRef]
+  );
 
   const handleKeyDown = useCallback(e => {
     if (e.key === 'Right' || e.key === 'ArrowRight') {
@@ -159,10 +169,8 @@ export default function App() {
     canvas.focus();
     const ctx = canvas.getContext('2d');
 
-    const interval = setInterval(() => {
-      draw(ctx, { interval });
-    }, 10);
-    return () => clearInterval(interval);
+    draw(ctx, updateDrawRef);
+    return () => cancelAnimationFrame(drawRef.current);
   }, []);
 
   return (
