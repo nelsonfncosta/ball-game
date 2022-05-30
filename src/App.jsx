@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { clear, drawBall, drawPaddle } from './drawUtils';
+import { clear, drawBall, drawBricks, drawPaddle } from './drawUtils';
 import style from './styles.css';
 
 const WIDTH = 1000;
@@ -27,6 +27,40 @@ const paddle = {
   width: PADDLE_WIDTH * 2,
   height: PADDLE_HEIGHT,
 };
+
+const BRICK_WIDTH = 75;
+const BRICK_PADDING = 10;
+const BRICK_ROWS = 3;
+const BRICK_COLUMNS = 8;
+
+const BRICK_SETTINGS = {
+  brickRowCount: BRICK_ROWS,
+  brickColumnCount: BRICK_COLUMNS,
+  brickWidth: BRICK_WIDTH,
+  brickPadding: BRICK_PADDING,
+  brickHeight: 20,
+  brickOffsetTop: 30,
+  brickOffsetLeft: (WIDTH - (BRICK_WIDTH + BRICK_PADDING) * BRICK_COLUMNS) / 2,
+  color: '#0095DD',
+};
+
+const bricks = [];
+
+// initialize the bricks
+for (let c = 0; c < BRICK_SETTINGS.brickColumnCount; c += 1) {
+  bricks[c] = [];
+  for (let r = 0; r < BRICK_SETTINGS.brickRowCount; r += 1) {
+    bricks[c][r] = {
+      x:
+        c * (BRICK_SETTINGS.brickWidth + BRICK_SETTINGS.brickPadding) +
+        BRICK_SETTINGS.brickOffsetLeft,
+      y:
+        r * (BRICK_SETTINGS.brickHeight + BRICK_SETTINGS.brickPadding) +
+        BRICK_SETTINGS.brickOffsetTop,
+      hits: 0,
+    };
+  }
+}
 
 function moveBall(interval) {
   if (ballPosY + dy < BALL_RADIUS) {
@@ -65,15 +99,39 @@ function movePaddle() {
   }
 }
 
+function hitBrick(c, r) {
+  bricks[c][r].hits += 1;
+}
+function collision() {
+  bricks.forEach((columns, c) => {
+    columns.forEach((brick, r) => {
+      if (
+        ballPosX > brick.x &&
+        ballPosX < brick.x + BRICK_SETTINGS.brickWidth &&
+        ballPosY > brick.y &&
+        ballPosY < brick.y + BRICK_SETTINGS.brickHeight
+      ) {
+        if (brick.hits === 0) {
+          dy = -dy;
+          hitBrick(c, r);
+        }
+      }
+    });
+  });
+}
+
 function draw(ctx, { interval }) {
   clear(ctx, WIDTH, HEIGHT);
 
   drawPaddle(ctx, paddle);
   drawBall(ctx, ballPosX, ballPosY, BALL_RADIUS);
+  drawBricks(ctx, BRICK_SETTINGS, bricks);
 
   moveBall(interval);
 
   movePaddle();
+
+  collision();
 }
 
 export default function App() {

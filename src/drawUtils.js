@@ -17,3 +17,21 @@ export function drawPaddle(ctx, { x, y, width, height }) {
   ctx.fill();
   ctx.closePath();
 }
+
+export function drawBrick(ctx, config, brick) {
+  ctx.beginPath();
+  ctx.rect(brick.x, brick.y, config.brickWidth, config.brickHeight);
+  ctx.fillStyle = config.color;
+  ctx.fill();
+  ctx.closePath();
+}
+
+export function drawBricks(ctx, config, bricks) {
+  bricks.forEach(columns => {
+    columns.forEach(brick => {
+      if (brick.hits === 0) {
+        drawBrick(ctx, config, brick);
+      }
+    });
+  });
+}
