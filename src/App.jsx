@@ -172,6 +172,16 @@ export default function App() {
     }
   }, []);
 
+  const handleTouchMove = useCallback(e => {
+    if (e.touches) {
+      const relativeX = e.touches[0].clientX - ref.current.offsetLeft;
+
+      if (relativeX > 0 && relativeX < WIDTH) {
+        paddle.x = relativeX - paddle.width / 2;
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const canvas = ref.current;
     canvas.focus();
@@ -193,6 +203,7 @@ export default function App() {
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
         onMouseMove={handleMouseMove}
+        onTouchMove={handleTouchMove}
       />
     </div>
   );
