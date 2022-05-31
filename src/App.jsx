@@ -153,7 +153,7 @@ export default function App() {
     } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
       goLeft = true;
     }
-  });
+  }, []);
 
   const handleKeyUp = useCallback(e => {
     if (e.key === 'Right' || e.key === 'ArrowRight') {
@@ -162,7 +162,15 @@ export default function App() {
     if (e.key === 'Left' || e.key === 'ArrowLeft') {
       goLeft = false;
     }
-  });
+  }, []);
+
+  const handleMouseMove = useCallback(e => {
+    const relativeX = e.clientX - ref.current.offsetLeft;
+
+    if (relativeX > 0 && relativeX < WIDTH) {
+      paddle.x = relativeX - paddle.width / 2;
+    }
+  }, []);
 
   useEffect(() => {
     const canvas = ref.current;
@@ -184,6 +192,7 @@ export default function App() {
         height={HEIGHT}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
+        onMouseMove={handleMouseMove}
       />
     </div>
   );
